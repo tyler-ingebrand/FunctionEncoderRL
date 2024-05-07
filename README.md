@@ -1,6 +1,6 @@
 # Zero-Shot Reinforcement Learning via Function Encoders
 
-This repo is the official, anonymous codebase for the paper "Zero-Shot Reinforcement Learning via Function Encoders".
+This repo is the official codebase for the paper "Zero-Shot Reinforcement Learning via Function Encoders".
 
 The code consists of the following four examples, each of which is effectively a seperate project with its own dependencies:
 1. Minimum working example
