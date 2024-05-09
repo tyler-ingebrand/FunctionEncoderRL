@@ -50,13 +50,6 @@ def get_reward_function(g, num_actions):
         rewards = -distances
         rewards = rewards.unsqueeze(1).expand(rewards.shape[0], num_actions).to(torch.float32)
         return rewards
-        # g_canonical = featurizer.transform(g[None, :])
-        # distances = torch.sum((obs - g_canonical) ** 2, dim=1) ** 0.5
-        # # rewards = torch.where(distances < 0.07, torch.tensor([0.0], device=obs.device), torch.tensor([-1.0], device=obs.device))
-        # rewards = -distances
-        # rewards = rewards.unsqueeze(1).expand(rewards.shape[0], num_actions).to(torch.float32)
-        # return rewards
-
 
     return reward_function
 
@@ -110,13 +103,6 @@ reward_encoder.load_state_dict(torch.load(f'data/{save_dir_date_time_re}/reward_
 all_encoings = []
 # Get encodings
 for goal in all_goals:
-    # reward_function = get_reward_function(goal, 5)
-    # true_rewards = reward_function(inputs)
-    #
-    # # predict rewards
-    # individual_encodings = reward_encoder(inputs)
-    # encoding = torch.mean(true_rewards.unsqueeze(1) * individual_encodings, dim=0)
-
     encoding = reward_encoder(torch.tensor(goal, dtype=torch.float32).unsqueeze(0) / 170.)
 
     all_encoings.append(encoding.cpu().detach())
@@ -203,12 +189,6 @@ reward_encoder.load_state_dict(torch.load(f'data/{save_dir_date_time_rea}/reward
 all_encoings = []
 # Get encodings
 for goal in all_goals:
-    # reward_function = get_reward_function(goal, 5)
-    # true_rewards = reward_function(inputs)
-    #
-    # # predict rewards
-    # individual_encodings = reward_encoder(inputs)
-    # encoding = torch.mean(true_rewards.unsqueeze(1) * individual_encodings, dim=0)
 
     encoding = reward_encoder(torch.tensor(goal, dtype=torch.float32).unsqueeze(0) / 170.)
 
@@ -278,13 +258,6 @@ backward_network.load_state_dict(params[1])
 all_encoings = []
 # Get encodings
 for goal in all_goals:
-    # predict rewards
-    # reward_function = get_reward_function(goal, 5)
-    # true_rewards = reward_function(inputs)
-    #
-    # # predict rewards
-    # individual_encodings = backward_network(inputs)
-    # encoding = torch.mean(true_rewards[:, 0].unsqueeze(1) * individual_encodings, dim=0)
 
     goal = torch.tensor(goal) / 170.
     encoding = backward_network(goal)
@@ -349,10 +322,6 @@ for goal in all_goals:
     reward_function = get_reward_function(goal, 5)
     true_rewards = reward_function(torch.tensor(goal).unsqueeze(0)/170.)
 
-    # do a random sampling to match its expected input size
-    # permutation = torch.randperm(inputs.shape[0])[:1]
-    # inputs2 = inputs[permutation]
-    # true_rewards2 = true_rewards[permutation]
     tensor_state = torch.tensor(goal).unsqueeze(0).unsqueeze(0)/170.
     encoding = transformer.get_latent_embedding(obs, tensor_state, true_rewards.unsqueeze(0))
     all_encoings.append(encoding.cpu().detach())
