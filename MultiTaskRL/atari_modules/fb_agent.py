@@ -11,6 +11,7 @@ from atari_modules.wrappers import goal_distance
 from grid_modules.mdp_utils import extract_policy
 from torch.distributions.cauchy import Cauchy
 from torch.utils.tensorboard import SummaryWriter
+from atari_modules.reward_encoder_agent import get_reward_function
 
 
 def compute_entropy(policy):
@@ -313,6 +314,18 @@ class FBAgent:
                 with torch.no_grad():
                     g_tensor = self._preproc_g(g)
                     w = self.backward_network(g_tensor)
+
+                    # this gives FB dense reward
+                    # we observe this performance is actually worse than the above sparse reward
+                    # therefore we leave FB in its original form
+                    # uniform_inputs = self.env.get_uniform_inputs()
+                    # uniform_inputs = self._preproc_g(uniform_inputs).squeeze(0)
+                    # reward_function = get_reward_function(g, 5)
+                    # rewards = reward_function(uniform_inputs)[0, :, 0]
+                    # individual_encodings = self.backward_network(uniform_inputs)
+                    # encoding = torch.mean(rewards.unsqueeze(1) * individual_encodings, dim=0, keepdim=True)
+                    # w = encoding.reshape(encoding.shape[0], -1)
+                    
                     obs_tensor = self._preproc_o(obs)
                     action = self.act_e_greedy(obs_tensor, w, update_eps=0.02)
                 observation_new, _, done, info = self.env.step(action)
