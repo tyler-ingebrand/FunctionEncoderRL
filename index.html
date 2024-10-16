@@ -198,24 +198,39 @@
 <!-- End image carousel -->
 
 
-  <!-- Dynamics -->
-<section class="hero is-small">
-  <div class="hero-body">
-        <!-- Your image here -->
-        <img src="static/images/carousel1.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-          First image description.
-        </h2>
-        <!-- Your image here -->
-        <img src="static/images/carousel2.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-          Second image description.
-        </h2>
-        <!-- Your image here -->
-        <img src="static/images/carousel3.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-         Third image description.
-       </h2>
+<!-- Dynamics -->
+<section class="section hero is-small is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths"><!-- Your image here -->
+        <div class="content has-text-justified">
+          <img src="static/images/mujoco.png" width="100%"
+               alt="A MuJoCo Half Cheetah with Variable limb sizes."/>
+          <p>
+            To demonstrate the efficacy of this approach, we first show that the function encoder can learn complex function spaces.
+            We consider a modified version of the MuJoCo Half Cheetah environment where the lengths of the limbs and the control authority are varied ceach episode.
+            These hidden-parameters affect the system dynamics.
+            The goal is to predict the dynamics given a small online dataset, but without direct knowledge of the hidden parameters.
+          </p>
+          <img src="static/images/mujoco_results.png" width="100%"
+               alt="A learning curve showing that the function encoder achieves better performance than a transformer."/>
+          <p>
+            We compare the function encoder against a transformer, which can incorporate the online dataset as input to the encoder side of the transformer.
+            The function encoder outperforms the transformer in terms of data efficiency and asymptotic performance.
+            We additionally compare against an oracle, which has access to the hidden parameters as an additional input.
+            Interestingly, a variant of the function encoder even outperforms the oracle, which suggests the function encoder's inductive bias is great for this type of transfer.
+          </p>
+          <img src="static/images/mujoco_qual.png" width="100%"
+                alt="A heat map shows that the function encoder's dynamics representation is smooth with respect to a change in hidden parameters"/>
+            <p>
+              Each axis of this plot shows a change in hidden parameter. The colors represent the cosine similarity between the dynamics representations
+              of two different hidden parameter values. The function encoder's representation is smooth with respect to a change in hidden parameters.
+              This suggests this representation is easy to work with for downstream tasks.
+            </p>
+
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 <!-- End image carousel -->
