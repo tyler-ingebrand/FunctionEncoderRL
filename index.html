@@ -169,6 +169,7 @@
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths"><!-- Your image here -->
+        <h2 class="title is-3">The Function Encoder</h2>
         <div class="content has-text-justified">
           <p>
             The goal of this paper is to represent functions from an arbitrary function space,
@@ -202,7 +203,8 @@
 <section class="section hero is-small is-light">
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths"><!-- Your image here -->
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Hidden-Parameter Dynamics Predictions</h2>
         <div class="content has-text-justified">
           <div class="has-text-centered"><!-- Centered image -->
             <img src="static/images/mujoco.png" width="70%"
@@ -214,8 +216,10 @@
             These hidden-parameters affect the system dynamics.
             The goal is to predict the dynamics given a small online dataset, but without direct knowledge of the hidden parameters.
           </p>
-          <img src="static/images/mujoco_results.png" width="80%" align="center"
+          <div class="has-text-centered"><!-- Centered image -->
+            <img src="static/images/mujoco_results.png" width="80%" align="center"
                alt="A learning curve showing that the function encoder achieves better performance than a transformer."/>
+          </div>
           <p>
             We compare the function encoder against a transformer, which can incorporate the online dataset as input to the encoder side of the transformer.
             The function encoder outperforms the transformer in terms of data efficiency and asymptotic performance.
@@ -240,25 +244,51 @@
 
 
 
-<!-- Youtube video -->
-<section class="hero is-small is-light">
-  <div class="hero-body">
-    <div class="container">
-      <!-- Paper video. -->
-      <h2 class="title is-3">Video Presentation</h2>
-      <div class="columns is-centered has-text-centered">
-        <div class="column is-four-fifths">
-          
-          <div class="publication-video">
-            <!-- Youtube embed code here -->
-            <iframe src="https://www.youtube.com/embed/JkaxUblCGz0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<!-- Multi-task -->
+<section class="section hero is-small is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Multi-Task Reinforcement Learning</h2>
+        <div class="content has-text-justified">
+          <div class="has-text-centered"><!-- Centered image -->
+            <img src="static/images/pacman_video.gif" width="60%"
+               alt="Ms. Pacman going to different goal locations."/>
           </div>
+          <p>
+            In multi-task RL, the reward function varies every episode.
+            We consider a modified version of Ms. Pacman where the goal location changes every episode.
+            However, the agent does not know the goal location, and only has a dataset of state,action,reward pairs. Thus,
+            this setting is more general than goal-reaching tasks alone.
+            We proceed by first learning basis functions to span the space of reward functions. Then, for each reward function,
+            we compute its representation according to the basis. Lastly, we pass this representation into the RL algorithm, in this case DQN.
+            Due to the linearity of the representation space, we are also able to make architecture choices to take advantage of the inductive bias,
+            i.e. by using an architecture similar to successor features.
+          </p>
+          <div class="has-text-centered"><!-- Centered image -->
+            <img src="static/images/pacman_quan.png" width="80%" align="center"
+               alt="A learning curve showing that the function encoder achieves better performance than baselines."/>
+          </div>
+          <p>
+            We compare the function encoder against multi-task RL baselines. The function encoder outperforms the other approaches
+            in terms of asymptotic performance. Interestingly, transformers also perform well in this setting.
+          </p>
+          <img src="static/images/pacman_qual.png" width="100%" align="center"
+                alt="A heat map shows that the function encoder's reward representation is smooth with respect to a change in goal location"/>
+            <p>
+              We compare the reward function representations of each goal location, relative to the goal in the top-left marked with a star.
+              The colors represent the cosine similarity between the reward representations of two different goal locations.
+              The figure shows that the function encoder's representation is smooth with respect to a change in goal location,
+              whereas the same is not always true for representation learning algorithms. The transformer also learns
+              a smooth representation space in this example, which likely explains why it performs so well.
+            </p>
+
         </div>
       </div>
     </div>
   </div>
 </section>
-<!-- End youtube video -->
+<!-- End image carousel -->
 
 
 <!-- Video carousel -->
