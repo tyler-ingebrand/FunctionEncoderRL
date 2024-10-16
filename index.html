@@ -204,8 +204,10 @@
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths"><!-- Your image here -->
         <div class="content has-text-justified">
-          <img src="static/images/mujoco.png" width="70%" margin-left="auto" margin-right="auto"
+          <div class="has-text-centered"><!-- Centered image -->
+            <img src="static/images/mujoco.png" width="70%"
                alt="A MuJoCo Half Cheetah with Variable limb sizes."/>
+          </div>
           <p>
             To demonstrate the efficacy of this approach, we first show that the function encoder can learn complex function spaces.
             We consider a modified version of the MuJoCo Half Cheetah environment where the lengths of the limbs and the control authority are varied ceach episode.
