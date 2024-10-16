@@ -204,7 +204,7 @@
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths"><!-- Your image here -->
         <div class="content has-text-justified">
-          <img src="static/images/mujoco.png" width="100%"
+          <img src="static/images/mujoco.png" width="70%"
                alt="A MuJoCo Half Cheetah with Variable limb sizes."/>
           <p>
             To demonstrate the efficacy of this approach, we first show that the function encoder can learn complex function spaces.
@@ -212,7 +212,7 @@
             These hidden-parameters affect the system dynamics.
             The goal is to predict the dynamics given a small online dataset, but without direct knowledge of the hidden parameters.
           </p>
-          <img src="static/images/mujoco_results.png" width="100%"
+          <img src="static/images/mujoco_results.png" width="80%"
                alt="A learning curve showing that the function encoder achieves better performance than a transformer."/>
           <p>
             We compare the function encoder against a transformer, which can incorporate the online dataset as input to the encoder side of the transformer.
@@ -224,7 +224,7 @@
                 alt="A heat map shows that the function encoder's dynamics representation is smooth with respect to a change in hidden parameters"/>
             <p>
               Each axis of this plot shows a change in hidden parameter. The colors represent the cosine similarity between the dynamics representations
-              of two different hidden parameter values. The function encoder's representation is smooth with respect to a change in hidden parameters.
+              of two different hidden parameter values. The figure shows that the function encoder's representation is smooth with respect to a change in hidden parameters.
               This suggests this representation is easy to work with for downstream tasks.
             </p>
 
