@@ -245,7 +245,7 @@
 
 
 <!-- Multi-task -->
-<section class="section hero is-small is-light">
+<section class="section hero is-small">
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
@@ -291,64 +291,58 @@
 <!-- End image carousel -->
 
 
-<!-- Video carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Another Carousel</h2>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <video poster="" id="video1" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel1.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video2">
-          <video poster="" id="video2" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel2.mp4"
-            type="video/mp4">
-          </video>
-        </div>
-        <div class="item item-video3">
-          <video poster="" id="video3" autoplay controls muted loop height="100%">\
-            <!-- Your video file here -->
-            <source src="static/videos/carousel3.mp4"
-            type="video/mp4">
-          </video>
+<!-- Multi-Agent -->
+<section class="section hero is-small is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Multi-Agent Reinforcement Learning</h2>
+        <div class="content has-text-justified">
+          <div class="has-text-centered"><!-- Centered image -->
+            <img src="static/images/tag_video.gif" width="60%" style='border:1px solid #000000'
+               alt="Two-player tag. "/>
+          </div>
+          <p>
+            In this setting, the environment is a two-player, zero-sum game. Each episode, an adversary is randomly sampled,
+            and the goal is for the ego agent to exploit the adversary. The environment is tag, and the ego agent is the tagger.
+            Each episode, we presume access to a dataset of state, adversary action pairs. The ego agent should use this
+            data to identify the adversary's policy, and then should exploit that policy if possible. In the function encoder case,
+            this data is used to compute the adversary's representation with respect to learned basis functions, and this representation
+            is fed into the RL algorithm.
+          </p>
+          <div class="has-text-centered"><!-- Centered image -->
+            <img src="static/images/tag_quan.png" width="80%" align="center"
+               alt="A learning curve showing that the function encoder achieves better performance than baselines."/>
+          </div>
+          <p>
+            We compare the function encoder against multi-agent baselines, and its achieves the best asymptotic performance.
+            Interestingly, PPO alone is unstable in this environment. This is a result of the unstationary nature of multi-agent RL.
+            In contrast, PPO + FE is stable and achieves good performance.
+            In addition, the transformer performs poorly in this environment. This is due to the inherent data inefficiency of transformers, where data is much
+            more restricted in multi-agent settings then it is in multi-task settings.
+            Lastly, we observe that a one-hot encoding of the adversary is not sufficient to achieve good performance.
+          </p>
         </div>
       </div>
     </div>
   </div>
 </section>
-<!-- End video carousel -->
-
-
-
-
-
-
-<!-- Paper poster -->
-<section class="hero is-small is-light">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title">Poster</h2>
-
-      <iframe  src="static/pdfs/sample.pdf" width="100%" height="550">
-          </iframe>
-        
-      </div>
-    </div>
-  </section>
-<!--End paper poster -->
+<!-- End image carousel -->
 
 
 <!--BibTex citation -->
   <section class="section" id="BibTeX">
     <div class="container is-max-desktop content">
       <h2 class="title">BibTeX</h2>
-      <pre><code>BibTex Code Here</code></pre>
+      <pre><code>@inproceedings{FunctionEncoder,
+  author       = {Tyler Ingebrand and
+                  Amy Zhang and
+                  Ufuk Topcu},
+  title        = {Zero-Shot Reinforcement Learning via Function Encoders},
+  booktitle    = {{ICML}},
+  year         = {2024}
+}
+      </code></pre>
     </div>
 </section>
 <!--End BibTex citation -->
