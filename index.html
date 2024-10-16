@@ -167,26 +167,31 @@
 <!-- Idea -->
 <section class="hero is-small">
   <div class="hero-body">
-        <!-- Your image here -->
-        <h2 class="subtitle has-text-centered">
-          The goal of this paper is to represent functions from an arbitrary function space,
-          so that this representation can be used for downstream tasks such as reinforcement learning.
-          Naturally, functions are well-represented
-          by their coefficients with respect to a given basis. However, many practical function spaces are high-dimensional, and so not amenable to
-          classic basis functions such as Fourier series. Therefore, we aim to find basis functions for arbitrary function spaces from data.
-          We introduce the function encoder, a algorithm which learns basis functions from data using a neural network.
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths"><!-- Your image here -->
+        <div class="content has-text-justified">
+          <h2 class="subtitle has-text-centered">
+            The goal of this paper is to represent functions from an arbitrary function space,
+            so that this representation can be used for downstream tasks such as reinforcement learning.
+            Naturally, functions are well-represented
+            by their coefficients with respect to a given basis. However, many practical function spaces are high-dimensional, and so not amenable to
+            classic basis functions such as Fourier series. Therefore, we aim to find basis functions for arbitrary function spaces from data.
+            We introduce the function encoder, a algorithm which learns basis functions from data using a neural network.
 
-        </h2>
-        <img src="static/images/function_encoder.gif" alt="A video of learned basis functions converging to span the space of quadratic functions."/>
-        <h2 class="subtitle has-text-centered">
-          This video demonstrates the function encoder algorithm applied to the space of quadratic functions.
-          Initially, the basis functions are random, and the randomly sampled quadratic functions (bottom) are poorly approximated.
-          However, as training progresses, the basis functions converge and this approximation becomes more and more accurate.
-          Furthermore, we can use the same basis functions to extrapolate to out-of-distribution functions not seen during training.
-          Due to the nature of basis functions, these out-of-distribution quadratics are still well represented as they lie within the span of the basis functions.
-          By construction, a function's representation, i.e. its coefficients with respect to the basis functions, is fully informative and linear.
-          This property makes its representations great for downstream tasks such as reinforcement learning.
-        </h2>
+          </h2>
+          <img src="static/images/function_encoder.gif" width="80%" alt="A video of learned basis functions converging to span the space of quadratic functions."/>
+          <h2 class="subtitle has-text-centered">
+            This video demonstrates the function encoder algorithm applied to the space of quadratic functions.
+            Initially, the basis functions are random, and the randomly sampled quadratic functions (bottom) are poorly approximated.
+            However, as training progresses, the basis functions converge and this approximation becomes more and more accurate.
+            Furthermore, we can use the same basis functions to extrapolate to out-of-distribution functions not seen during training.
+            Due to the nature of basis functions, these out-of-distribution quadratics are still well represented as they lie within the span of the basis functions.
+            By construction, a function's representation, i.e. its coefficients with respect to the basis functions, is fully informative and linear.
+            This property makes its representations great for downstream tasks such as reinforcement learning.
+          </h2>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 <!-- End image carousel -->
