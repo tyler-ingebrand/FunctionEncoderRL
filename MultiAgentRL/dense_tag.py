@@ -71,6 +71,43 @@ from modified_simple_env import SimpleEnv, make_env # has better rendering
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
 
+class CustomWorld(World):
+    # integrate physical state
+    def integrate_state(self, p_force):
+        for i, entity in enumerate(self.entities):
+            if not entity.movable:
+                continue
+            entity.state.p_pos += entity.state.p_vel * self.dt
+            entity.state.p_vel = entity.state.p_vel * (1 - self.damping)
+            if p_force[i] is not None:
+                entity.state.p_vel += (p_force[i] / entity.mass) * self.dt
+            if entity.max_speed is not None:
+                speed = np.sqrt(
+                    np.square(entity.state.p_vel[0]) + np.square(entity.state.p_vel[1])
+                )
+                if speed > entity.max_speed:
+                    entity.state.p_vel = (
+                            entity.state.p_vel
+                            / np.sqrt(
+                        np.square(entity.state.p_vel[0])
+                        + np.square(entity.state.p_vel[1])
+                    )
+                            * entity.max_speed
+                    )
+            if entity.state.p_pos[0] < -0.9:
+                entity.state.p_pos[0] = -0.9
+                entity.state.p_vel[0] = 0
+            if entity.state.p_pos[0] > 0.9:
+                entity.state.p_pos[0] = 0.9
+                entity.state.p_vel[0] = 0
+            if entity.state.p_pos[1] < -0.9:
+                entity.state.p_pos[1] = -0.9
+                entity.state.p_vel[1] = 0
+            if entity.state.p_pos[1] > 0.9:
+                entity.state.p_pos[1] = 0.9
+                entity.state.p_vel[1] = 0
+
+
 class dense_tag_env(SimpleEnv, EzPickle):
     def __init__(
         self,
@@ -127,7 +164,7 @@ class Scenario(BaseScenario):
             adversary_acceleration = 3.0
             adversary_max_speed = 1.0
 
-        world = World()
+        world = CustomWorld()
         # set any world properties first
         world.dim_c = 2
         num_good_agents = num_good
@@ -168,10 +205,17 @@ class Scenario(BaseScenario):
         for i, landmark in enumerate(world.landmarks):
             landmark.color = np.array([0.25, 0.25, 0.25])
         # set random initial states
+        # for agent in world.agents:
+        #     agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p)
+        #     agent.state.p_vel = np.zeros(world.dim_p)
+        #     agent.state.c = np.zeros(world.dim_c)
+
+        # both agents start in the center
         for agent in world.agents:
-            agent.state.p_pos = np_random.uniform(-1, +1, world.dim_p)
+            agent.state.p_pos = np.zeros(world.dim_p)
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
+
         for i, landmark in enumerate(world.landmarks):
             if not landmark.boundary:
                 landmark.state.p_pos = np_random.uniform(-0.9, +0.9, world.dim_p)
@@ -229,16 +273,17 @@ class Scenario(BaseScenario):
                     rew -= 10
 
         # agents are penalized for exiting the screen, so that they can be caught by the adversaries
-        def bound(x):
-            if x < 0.9:
-                return 0
-            if x < 1.0:
-                return (x - 0.9) * 10
-            return min(np.exp(2 * x - 2), 10)
-
-        for p in range(world.dim_p):
-            x = abs(agent.state.p_pos[p])
-            rew -= bound(x)
+        # this isnt needed since we enforce a boundary.
+        # def bound(x):
+        #     if x < 0.9:
+        #         return 0
+        #     if x < 1.0:
+        #         return (x - 0.9) * 10
+        #     return min(np.exp(2 * x - 2), 10)
+        #
+        # for p in range(world.dim_p):
+        #     x = abs(agent.state.p_pos[p])
+        #     rew -= bound(x)
 
         return rew
 
@@ -280,9 +325,9 @@ class Scenario(BaseScenario):
             other_pos.append(other.state.p_pos - agent.state.p_pos)
             other_vel.append(other.state.p_vel)
         return np.concatenate(
-            [agent.state.p_vel]
-            + [agent.state.p_pos]
-            + entity_pos
-            + other_pos
-            + other_vel
+            # [agent.state.p_vel] +
+            [agent.state.p_pos]
+            # + entity_pos # comment out other agent's state info to make it partially observable.
+            # + other_pos  # basically, you have to guess where the other player is hiding.
+            # + other_vel
         )

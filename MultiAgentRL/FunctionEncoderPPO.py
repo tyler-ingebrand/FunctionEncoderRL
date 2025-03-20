@@ -27,7 +27,8 @@ class FunctionEncoderPPOPolicy(PPOPolicy):
     ) -> Batch:
         if self.force_agent != -1:
             batch.info['env_id'] = np.array([self.force_agent]) # if set, forces to play against this agent. Used for testing.
-        return super().forward(batch, state, **kwargs)
+        out =  super().forward(batch, state, **kwargs)
+        return out
 
     # assumes we only play against 1 agent
     def set_agent(self, agent: int):
@@ -77,11 +78,14 @@ class FunctionEncoderPPOPolicy(PPOPolicy):
     def learn(  # type: ignore
         self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
     ) -> Dict[str, List[float]]:
-        losses, clip_losses, vf_losses, ent_losses = [], [], [], []
+        losses, clip_losses, vf_losses, ent_losses, cos_sims = [], [], [], [], []
         for step in range(repeat):
             if self._recompute_adv and step > 0:
                 batch = self._compute_returns(batch, self._buffer, self._indices)
             for minibatch in batch.split(batch_size, merge_last=True):
+                # average_cos_sim = self.get_cos_sim(minibatch)
+                # cos_sims.append(average_cos_sim)
+                
                 # calculate loss for actor
                 dist = self(minibatch).dist
                 if self._norm_adv:
@@ -136,6 +140,7 @@ class FunctionEncoderPPOPolicy(PPOPolicy):
             "loss/clip": clip_losses,
             "loss/vf": vf_losses,
             "loss/ent": ent_losses,
+            # "loss/cos_sim": cos_sims,
         }
 
     @staticmethod
@@ -182,3 +187,71 @@ class FunctionEncoderPPOPolicy(PPOPolicy):
         returns = advantage + v_s
         # normalization varies from each policy, so we don't do it here
         return returns, advantage
+    
+    def get_cos_sim(self, batch: Batch) -> float:
+        
+        # for each adersary compute gradients. 
+        # then we measure the cos sim between gradients
+        gradients = []
+
+        for adv in range(10):
+            # filter batch by adv
+            adv_batch = batch[batch.info['env_id'] == adv]
+
+
+            # calculate loss for actor
+            dist = self(adv_batch).dist
+            if self._norm_adv:
+                mean, std = adv_batch.adv.mean(), adv_batch.adv.std()
+                adv_batch.adv = (adv_batch.adv -
+                                    mean) / (std + self._eps)  # per-batch norm
+            ratio = (dist.log_prob(adv_batch.act) -
+                        adv_batch.logp_old).exp().float()
+            ratio = ratio.reshape(ratio.size(0), -1).transpose(0, 1)
+            surr1 = ratio * adv_batch.adv
+            surr2 = ratio.clamp(
+                1.0 - self._eps_clip, 1.0 + self._eps_clip
+            ) * adv_batch.adv
+            if torch.isnan(surr1).any() or torch.isnan(surr2).any():
+                print("HERE")
+            if self._dual_clip:
+                clip1 = torch.min(surr1, surr2)
+                clip2 = torch.max(clip1, self._dual_clip * adv_batch.adv)
+                clip_loss = -torch.where(adv_batch.adv < 0, clip2, clip1).mean()
+            else:
+                clip_loss = -torch.min(surr1, surr2).mean()
+            if torch.isnan(clip_loss).any() or clip_loss > 100:
+                print("HERE")
+            # calculate loss for critic
+            value = self.critic(adv_batch.obs, info=adv_batch.info).flatten() #  TODO: FunctionEncoder
+            if self._value_clip:
+                v_clip = adv_batch.v_s + \
+                    (value - adv_batch.v_s).clamp(-self._eps_clip, self._eps_clip)
+                vf1 = (adv_batch.returns - value).pow(2)
+                vf2 = (adv_batch.returns - v_clip).pow(2)
+                vf_loss = torch.max(vf1, vf2).mean()
+            else:
+                vf_loss = (adv_batch.returns - value).pow(2).mean()
+            # calculate regularization and overall loss
+            ent_loss = dist.entropy().mean()
+            loss = clip_loss + self._weight_vf * vf_loss \
+                - self._weight_ent * ent_loss
+            self.optim.zero_grad()
+            loss.backward()
+            
+            # get gradients
+            grads = []
+            for param in self._actor_critic.parameters():
+                grads.append(param.grad.flatten())
+            grads = torch.cat(grads)
+            gradients.append(grads)
+
+        # remember to zero grad
+        self.optim.zero_grad()
+
+        # calculate pairwise cos sim
+        cos_sims = []
+        for i in range(10):
+            for j in range(i+1, 10):
+                cos_sims.append(torch.nn.functional.cosine_similarity(gradients[i], gradients[j], dim=0).item())
+        return np.mean(cos_sims)

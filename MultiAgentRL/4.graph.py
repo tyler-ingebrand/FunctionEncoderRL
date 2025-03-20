@@ -89,17 +89,18 @@ for alg_type in run_data:
 
     alg_data = np.stack(alg_data, axis=0)
     print(alg_type, alg_data.shape)
-    quartiles = np.quantile(alg_data, [0.25, 0.5, 0.75], axis=0)
+    quartiles = np.quantile(alg_data, [0.0, 0.5, 1.0], axis=0)
 
     # plot with shaded area
     color = "blue" if alg_type == "FE PPO" else "red" if alg_type == "PPO" else "green" if alg_type == "Transformer PPO" else "orange" if alg_type == "OHE PPO" else "black"
-    ax.plot(step, smooth(quartiles[1]), label=alg_type, color=color)
+    ax.plot(step, quartiles[1], label=alg_type, color=color)
     ax.fill_between(
         step,
-        smooth(quartiles[0]),
-        smooth(quartiles[2]),
+        quartiles[0],
+        quartiles[2],
         alpha=0.2,
         color=color,
+        lw=0,
     )
 
 ax.set_xlabel("Steps")
@@ -118,7 +119,7 @@ for alg_type in run_data:
 
     alg_data = np.stack(alg_data, axis=0)
     print(alg_type, alg_data.shape)
-    quartiles = np.quantile(alg_data, [0.25, 0.5, 0.75], axis=0)
+    quartiles = np.quantile(alg_data, [0.0, 0.5, 1.00], axis=0)
     # df[alg_type] = smooth(quartiles[1])
     # df[alg_type + "_low"] = smooth(quartiles[0])
     # df[alg_type + "_high"] = smooth(quartiles[2])

@@ -40,7 +40,7 @@ from league_policy import LeaguePolicy
 from oracle_actor_critic import OracleCritic, OracleActorProb
 from transformer_actor_critic import TransformerActorProb, TransformerCritic
 from video_recorder import VideoRecorder
-
+from CustomMultiAgentPolicyManager import CustomMultiAgentPolicyManager
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -107,7 +107,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument("--norm-adv", type=int, default=0)
     parser.add_argument("--recompute-adv", type=int, default=1)
     parser.add_argument("--repeat-per-collect", type=int, default=10)
-    parser.add_argument('--embed-dim', type=int, default=100)
+    parser.add_argument('--embed-dim', type=int, default=20)
     parser.add_argument('--alg-type', type=str, default="FE_PPO")  ## Either PPO or FE_PPO
 
     # parser.add_argument("--step-per-collect", type=int, default=2048)
@@ -117,20 +117,20 @@ def get_args() -> argparse.Namespace:
     parser = get_parser()
     return parser.parse_known_args()[0]
 
-def get_encodings(encoder, runners, args, print_similarities=False):
+def get_encodings(encoder, runners, args, print_similarities=True):
     with torch.no_grad():
         encodings = []
         batches = []
-        low = torch.tensor([-1.1, -1.1, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0], device=args.device)  # note the obs space for a runner is runner_vel(2), runner_pos(2), opponent_pos(2), opponent_vel(2)
-        high = torch.tensor([1.1, 1.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], device=args.device)
+        low = torch.tensor([-1.0, -1.0,], device=args.device)  # note the obs space for a runner is runner_vel(2), runner_pos(2), opponent_pos(2), opponent_vel(2)
+        high = torch.tensor([1.0, 1.0,], device=args.device)
         num_samples = 10_000
         states = low + torch.rand(num_samples, len(low), device=args.device) * (high - low)
         for runner in runners:
             batch = Batch(obs=states, info={})
             actions = runner.forward(batch).act
             individual_encodings = encoder(states)
-            encoding = torch.mean(actions.unsqueeze(1) * individual_encodings, dim=0)
-            encodings.append(encoding.flatten())
+            encoding = torch.einsum("bka, ba -> bk", individual_encodings, actions).mean(dim=0)  # of size k
+            encodings.append(encoding)
             batch.act = actions
             batches.append(batch)
         if print_similarities:
@@ -146,27 +146,27 @@ def make_function_encoder_ppo_agent(args, action_space, encodings, optim=None):
     # model
     num_actions = action_space.low.shape[0]
     net_a = Net(
-        args.state_shape[0] + args.embed_dim * num_actions,
+        args.state_shape[0] + args.embed_dim,
         hidden_sizes=args.hidden_sizes,
         activation=nn.Tanh,
         device=args.device,
     )
     actor = FunctionEncoderActorProb(
         net_a,
-        args.embed_dim * num_actions,
+        args.embed_dim ,
         args.action_shape,
         all_encodings=encodings,
         unbounded=True,
         device=args.device,
     ).to(args.device)
     net_c = Net(
-        args.state_shape[0] + args.embed_dim * num_actions,
+        args.state_shape[0] + args.embed_dim,
         hidden_sizes=args.hidden_sizes,
         activation=nn.Tanh,
         device=args.device,
     )
     critic = FunctionEncoderCritic(net_c,
-                                   args.embed_dim * num_actions,
+                                   args.embed_dim,
                                    all_encodings=encodings,
                                    device=args.device).to(args.device)
     actor_critic = ActorCritic(actor, critic)
@@ -294,7 +294,7 @@ def make_ppo_agent(args, action_space, optim=None):
 
 def make_oracle_ppo_agent(args, action_space, optim=None):
     # model
-    args.state_shape = (args.state_shape[0] + 10,) # 10 agents in league
+    args.state_shape = (args.state_shape[0] + 100,) # 10 agents in league
     net_a = Net(
         args.state_shape,
         hidden_sizes=args.hidden_sizes,
@@ -465,7 +465,7 @@ def get_agents(
 
     agents = [agent_1, agent_2]
 
-    policy = MultiAgentPolicyManager(agents, env)
+    policy = CustomMultiAgentPolicyManager(agents, env)
 
     return policy, optim, env.agents
 
@@ -530,7 +530,7 @@ def train_league(
 
     encodings, example_data = get_encodings(encoder, runners, args)
     encodings = torch.stack(encodings)
-    encodings = encodings * (args.embed_dim**0.01 / torch.mean(torch.norm(encodings, dim=1)))
+    encodings = encodings * (args.embed_dim**0.5 / torch.mean(torch.norm(encodings, dim=1)))
 
     if args.alg_type == "FE_PPO":
         tagger = make_function_encoder_ppo_agent(args, throw_away_env.action_space, encodings)
@@ -546,7 +546,7 @@ def train_league(
     base_log_path = os.path.join(args.logdir, 'tag', 'new_players', current_date_time_string)
     writer = SummaryWriter(base_log_path)
     writer.add_text("args", str(args))
-    logger = TensorboardLogger(writer)
+    logger = TensorboardLogger(writer, update_interval=1)
 
     # create a tag to save algorithm type in the file dir
     if args.alg_type == "FE_PPO":

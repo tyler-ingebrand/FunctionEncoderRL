@@ -164,7 +164,7 @@ class FunctionEncoderActorProb(nn.Module):
         self._unbounded = unbounded
 
         # this part is different from normal
-        assert embed_size == all_encodings.shape[1]
+        assert embed_size == all_encodings.shape[1], f"Embed size {embed_size} does not match encoding size {all_encodings.shape[1]}"
         self.embed_size = embed_size
         self.encodings = all_encodings.to(self.device)
         print(self.encodings)

@@ -59,7 +59,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('--test-num', type=int, default=10)
     parser.add_argument('--logdir', type=str, default='log')
     parser.add_argument('--render', type=float, default=0.1)
-    parser.add_argument('--embed-dim', type=int, default=100)
+    parser.add_argument('--embed-dim', type=int, default=20)
     parser.add_argument(
         '--win-rate',
         type=float,
@@ -241,8 +241,8 @@ def train_encoder(
 
     # set up sampling space
     # note we are using "favor runner" so runner vel max = 1.1, tagger max = 1.0, assume all agents stay within -1 to 1
-    low = torch.tensor([-1.1, -1.1, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0], device=args.device) # note the obs space for a runner is runner_vel(2), runner_pos(2), opponent_pos(2), opponent_vel(2)
-    high = torch.tensor([1.1, 1.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], device=args.device)
+    low = torch.tensor([-1.0, -1.0], device=args.device) # note the obs space for a runner is runner_vel(2), runner_pos(2), opponent_pos(2), opponent_vel(2)
+    high = torch.tensor([1.0, 1.0], device=args.device)
     num_samples = 10_000
 
     # train
@@ -254,10 +254,10 @@ def train_encoder(
             batch = Batch(obs=states, info={})
             actions = runner.forward(batch).act
             individual_encodings = policy_encoder(states)
-            encoding = torch.mean(actions.unsqueeze(1) * individual_encodings, dim=0)
+            encoding = torch.einsum("bka, ba -> bk", individual_encodings, actions).mean(dim=0) # of size k
 
             # compute estimation loss
-            estimated_actions = torch.sum(encoding.unsqueeze(0) * individual_encodings, dim=1)
+            estimated_actions = torch.einsum("k, bka -> ba", encoding, individual_encodings)
             assert estimated_actions.shape == actions.shape
             estimation_loss = torch.mean((estimated_actions - actions)**2)
             estimation_loss.backward()

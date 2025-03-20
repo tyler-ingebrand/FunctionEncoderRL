@@ -45,7 +45,7 @@ class OracleCritic(nn.Module):
         self.device = device
         self.preprocess = preprocess_net
         self.output_dim = 1 # embed_size # 1
-        input_dim = getattr(preprocess_net, "output_dim", preprocess_net_output_dim) + 10
+        input_dim = getattr(preprocess_net, "output_dim", preprocess_net_output_dim) + 100
         self.last = MLP(
             input_dim,  # type: ignore
             self.output_dim,
@@ -77,8 +77,9 @@ class OracleCritic(nn.Module):
         # get encoding and add it to obs
         with torch.no_grad():
             env_indicies = info.get('env_id', np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])[:obs.shape[0]])  # the very first time, info is empty for some reason,but it is only the 10 envs, not training
-            one_hot = torch.zeros(env_indicies.shape[0], 10, device=self.device)
-            one_hot[torch.arange(env_indicies.shape[0]), env_indicies] = 1
+            one_hot = torch.zeros(env_indicies.shape[0], 100, device=self.device)
+            for abc in range(10):
+                one_hot[torch.arange(env_indicies.shape[0]), 10 * env_indicies + abc] = 1            
             obs = torch.concat((obs, one_hot), dim=1)
 
         # pass through network and get output
@@ -135,7 +136,7 @@ class OracleActorProb(nn.Module):
         self.preprocess = preprocess_net
         self.device = device
         self.output_dim = int(np.prod(action_shape))
-        input_dim = getattr(preprocess_net, "output_dim", preprocess_net_output_dim) + 10 # add 10 for one hot encoding
+        input_dim = getattr(preprocess_net, "output_dim", preprocess_net_output_dim) + 100 # add 10 for one hot encoding
         self.mu = MLP(
             input_dim,  # type: ignore
             self.output_dim,
@@ -172,8 +173,9 @@ class OracleActorProb(nn.Module):
         # get encoding and add it to obs
         with torch.no_grad():
             env_indicies = info.get('env_id', np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])[:obs.shape[0]])  # the very first time, info is empty for some reason,but it is only the 10 envs, not training
-            one_hot = torch.zeros(env_indicies.shape[0], 10, device=self.device)
-            one_hot[torch.arange(env_indicies.shape[0]), env_indicies] = 1
+            one_hot = torch.zeros(env_indicies.shape[0], 100, device=self.device)
+            for abc in range(10):
+                one_hot[torch.arange(env_indicies.shape[0]), 10 * env_indicies + abc] = 1
             obs = torch.concat((obs, one_hot), dim=1)
 
         logits, hidden = self.preprocess(obs, state)
